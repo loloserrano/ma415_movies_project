@@ -1,0 +1,87 @@
+---
+title: "movie"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+movies <- read.csv(file='/Users/professorserrano/Documents/College/Fall 2020 Semester/Stats in R/archive/movies_metadata.csv') 
+```
+
+Here are the top 10 languages in the dataset and a same graph of vote_average by revenue, colored by language: 
+
+```{r top languages}
+lang <- movies %>%
+  group_by(original_language) %>%
+  count %>%
+  arrange(desc(n))
+
+top_10_lang <- unique(lang$original_language[1:10])
+
+top_langs <- lang %>%
+  filter(original_language %in% top_10_lang) %>%
+  mutate(percentage = n / 45466)
+
+```
+
+Here's a filter for just the English movies, with a little test graph plotting vote_average by revenue: 
+
+```{r english movies}
+
+en_movies <- movies %>%
+  filter(original_language == "en") 
+
+en_movies
+
+ggplot(en_movies,mapping=aes(vote_average,revenue)) +
+  geom_point() +
+  labs(title = "English Movies")
+```
+
+Here's a filter for all movies not in English, with the same test graph: 
+
+```{r not english}
+not_english <- lang %>%
+  filter(original_language != "en")
+
+not_english
+
+ggplot(not_english,mapping=aes(original_language,n)) +
+  geom_point() +
+  coord_flip() +
+  labs(title="Not English movies")
+```
+
+This gives the breakdown by genre, and then the breakdown of dramas by original language. 
+The trouble with genre is that they're kind of additive - there's often multiple genres at once. So if something's a Romance and a Comedy, I think it would be double-counted using the str_detect. 
+
+```{r genres}
+genres <-  movies %>%
+  group_by(genres) %>%
+  count %>%
+  arrange(desc(n)) 
+genres
+
+dramas <- movies %>%
+  filter(stringr::str_detect(genres, "Drama")) %>%
+  group_by(original_language) %>%
+  count %>%
+  arrange(desc(n)) %>%
+  mutate(percentage = n / 20265)
+dramas
+```
+
+This gives the breakdown by studio. 
+
+```{r studios}
+studios <- movies %>%
+  group_by(production_companies) %>%
+  count %>%
+  arrange(desc(n)) %>%
+studios
+
+
+```
+
+
